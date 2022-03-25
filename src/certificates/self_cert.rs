@@ -3,13 +3,9 @@ use rcgen::generate_simple_self_signed;
 
 use crate::store::store_cert;
 
-pub fn gen_self_cert(out: Option<String>) {
+pub fn gen_self_cert(out: String) {
 
-    let name =  match out {
-        Some(x) =>  x ,
-        None => "".to_string(),
-    };
-
+    let name =  out;
     let subject_alt_names = vec!["hello.world.example".to_string(),
         "localhost".to_string()];
 

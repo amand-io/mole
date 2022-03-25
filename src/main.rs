@@ -1,47 +1,31 @@
-extern crate getopts;
 mod certificates;
 mod store;
-use getopts::Options;
-use std::env;
-use certificates::self_cert as self_cert;
+mod sub;
 
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} [options] NAME", program);
-    print!("{}", opts.usage(&brief));
+extern crate gflags;
+use sub::create as create;
+use sub::show as show;
+
+gflags::define! {
+    -s, --self = false
 }
 
-fn print_self(out: Option<String>) {
-        match out {
-            Some(x) => { println!("Generating a self-signed certificate and linking with name: {} ...", x);
-                       self_cert::gen_self_cert(Some(x)); 
-            } ,
-            None => println!("Generating a self-signed certificate  with no name linked..."),
-        }
-
+gflags::define! {
+    -h, --help = false
 }
+
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
-
-    let mut opts = Options::new();
-    opts.optopt("n", "name", "name of your certificate", "NAME");
-    opts.optflag("h", "help", "print this help menu");
-    opts.optflag("s", "self", "create a self-signed certificate");
-
-    let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m }
-        Err(f) => { panic!("{}", f.to_string()) }
-    };
-
-    if matches.opt_present("h") {
-        print_usage(&program, opts);
-        return;
-    }
+    let args = gflags::parse();
     
-    let output = matches.opt_str("n");
+    if HELP.flag {
+        gflags::print_help_and_exit(0);
+    }
 
-    if matches.opt_present("s") {
-        print_self(output);
+    match args[0] {
+        "create" => create::main(args[1].to_string()),
+        "show" => show::main(args[1].to_string()),
+        // Handle the rest of cases
+        _ => println!("Don't have this options"),
     }
 
 

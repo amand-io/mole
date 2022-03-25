@@ -23,7 +23,7 @@ pub fn save_cert(name: String, cert: rcgen::Certificate) -> std::io::Result<()> 
     let curr_path = format!("{}/src/store/data/{}",path.display() , name);
     if ! std::path::Path::new(&curr_path).exists() {
         fs::create_dir_all(curr_path)?;
-        println!("Saving file created on {}/src/store/data{}/",path.display(), name);
+        println!("Saving file created on {}/src/store/data/{}/",path.display(), name);
     } else if !verify() {  return Ok(()); }
 
     let cert_path = format!("{}/src/store/data/{}/cert.pem",path.display(), name);
@@ -52,5 +52,29 @@ pub fn save_cert(name: String, cert: rcgen::Certificate) -> std::io::Result<()> 
     let _ = key_file.write(key_arq.as_bytes())?;
 
     println!("{}", key_arq);
+    Ok(())
+}
+
+pub fn get_cert(name: String) -> std::io::Result<()> {
+    let path = env::current_dir()?;
+    println!("The current directory is {}", path.display());
+
+    let curr_path = format!("{}/src/store/data/{}",path.display() , name);
+    if std::path::Path::new(&curr_path).exists() {
+        fs::create_dir_all(curr_path)?;
+        println!("Catching file from {}/src/store/data/{}/",path.display(), name);
+    } else {  return Ok(()); }
+
+    let cert_path = format!("{}/src/store/data/{}/cert.pem",path.display(), name);
+    let contents_c = fs::read_to_string(cert_path)
+        .expect("Something went wrong reading the file");
+
+    println!("With cert:\n{}", contents_c);
+
+    let key_path = format!("{}/src/store/data/{}/cert.key",path.display(), name);
+    let contents_k = fs::read_to_string(key_path)
+        .expect("Something went wrong reading the file");
+
+    println!("With cert:\n{}", contents_k);
     Ok(())
 }
