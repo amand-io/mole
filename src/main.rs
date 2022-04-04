@@ -11,6 +11,10 @@ gflags::define! {
 }
 
 gflags::define! {
+    -c, --ca <NAME> = "Root"
+}
+
+gflags::define! {
     -h, --help = false
 }
 

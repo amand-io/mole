@@ -4,7 +4,7 @@ use std::env;
 use promptly::prompt;
 use std::fs::OpenOptions;
 
-fn verify() -> bool {
+pub fn verify() -> bool {
     loop {
         let answer: String = prompt("The Name has been used :( Do you want subscribe the files? [Y/ N]");
     
