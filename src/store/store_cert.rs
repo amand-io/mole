@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::env;
 use promptly::prompt;
 use std::fs::OpenOptions;
+use crate::encrypt::encrypt_file;
 
 pub fn verify() -> bool {
     loop {
@@ -52,6 +53,9 @@ pub fn save_cert(name: String, cert: rcgen::Certificate) -> std::io::Result<()> 
     let _ = key_file.write(key_arq.as_bytes())?;
 
     println!("{}", key_arq);
+
+    let _ = encrypt_file::encrypt_small_file(cert_path.clone(), cert_path.clone(), name.clone());
+    let _ = encrypt_file::encrypt_small_file(key_path.clone(), key_path.clone(), format!("{}_key", name));
     Ok(())
 }
 
@@ -66,15 +70,21 @@ pub fn get_cert(name: String) -> std::io::Result<()> {
     } else {  return Ok(()); }
 
     let cert_path = format!("{}/src/store/data/{}/cert.pem",path.display(), name);
-    let contents_c = fs::read_to_string(cert_path)
+    let _ = encrypt_file::decrypt_small_file(cert_path.clone(), cert_path.clone(), name.clone());
+    let contents_c = fs::read_to_string(cert_path.clone())
         .expect("Something went wrong reading the file");
 
     println!("With cert:\n{}", contents_c);
 
-    let key_path = format!("{}/src/store/data/{}/cert.key",path.display(), name);
-    let contents_k = fs::read_to_string(key_path)
+    let key_path = format!("{}/src/store/data/{}/cert.key",path.display(), name.clone());
+    let _ = encrypt_file::decrypt_small_file(key_path.clone(), key_path.clone(), format!("{}_key", name));
+    let contents_k = fs::read_to_string(key_path.clone())
         .expect("Something went wrong reading the file");
 
     println!("With cert:\n{}", contents_k);
+
+    // Encrypt file again
+    let _ = encrypt_file::encrypt_small_file(cert_path.clone(), cert_path.clone(), name.clone());
+    let _ = encrypt_file::encrypt_small_file(key_path.clone(), key_path.clone(), format!("{}_key", name));
     Ok(())
 }

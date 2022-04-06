@@ -1,6 +1,10 @@
+#[macro_use]
+extern crate lazy_static;
+
 mod certificates;
 mod store;
 mod sub;
+mod encrypt;
 
 extern crate gflags;
 use sub::create as create;
@@ -20,7 +24,7 @@ gflags::define! {
 
 fn main() {
     let args = gflags::parse();
-    
+
     if HELP.flag {
         gflags::print_help_and_exit(0);
     }
