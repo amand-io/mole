@@ -9,11 +9,16 @@ use rand::{rngs::OsRng, RngCore};
 use std::{
     fs::{self },
 };
-use std::collections::HashMap;
-use std::sync::Mutex;
 
-lazy_static! {
-    static ref HASHMAP: Mutex<HashMap<String, ([u8; 32], [u8; 24])>> = Mutex::new(HashMap::new());
+use std::fs::File;
+use std::io::BufWriter;
+use std::io::BufReader;
+use std::env;
+
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
+pub struct Config {
+    key: [u8; 32], 
+    nonce: [u8; 24],
 }
 
 pub fn encrypt_small_file(
@@ -28,10 +33,15 @@ pub fn encrypt_small_file(
     OsRng.fill_bytes(&mut key);
     OsRng.fill_bytes(&mut nonce);
 
-    if HASHMAP.lock().unwrap().contains_key(&name) {
-        let key_and_nonce = HASHMAP.lock().unwrap().get(&name).unwrap().clone();
-        key = key_and_nonce.0;
-        nonce = key_and_nonce.1;
+
+    let path = env::current_dir()?;
+    let config_path = format!("{}/src/store/data/{}/config",path.display(), name);
+    if std::path::Path::new(&config_path).exists() {
+        let mut f = BufReader::new(File::open(config_path.clone()).unwrap());
+        let m: Config = bincode::deserialize_from(&mut f).unwrap();
+
+        key = m.key;
+        nonce = m.nonce;
     }
 
     let key_chacha = Key::from_slice(&key);
@@ -46,10 +56,12 @@ pub fn encrypt_small_file(
 
     fs::write(&dist, encrypted_file)?;
 
-    HASHMAP.lock().unwrap().insert(
-        name,
-        (key, nonce),
-    );
+    let m = Config{ key: key, nonce: nonce};
+    let curr_path = format!("{}/src/store/data/{}",path.display() , name);
+    fs::create_dir_all(curr_path)?;
+
+    let mut f = BufWriter::new(File::create(config_path.clone()).unwrap());
+    bincode::serialize_into(&mut f, &m).unwrap();
 
     Ok(())
 }
@@ -60,19 +72,18 @@ pub fn decrypt_small_file(
     name: String,
 ) -> Result<(), anyhow::Error> {
 
-    if !HASHMAP.lock().unwrap().contains_key(&name) {
-        println!("The name {} not exist in this mole. :(", name);
-        return Ok(())
-    }
+    let path = env::current_dir()?;
+    let config_path = format!("{}/src/store/data/{}/config",path.display(), name);
+
+    let mut f = BufReader::new(File::open(config_path).unwrap());
+    let m: Config = bincode::deserialize_from(&mut f).unwrap();
+
+    let cipher = XChaCha20Poly1305::new(m.key.as_slice().into());
     
-    let key_and_nonce = HASHMAP.lock().unwrap().get(&name).unwrap().clone();
-
-    let cipher = XChaCha20Poly1305::new(key_and_nonce.0.as_slice().into());
-
     let file_data = fs::read(encrypted_file_path)?;
 
     let decrypted_file = cipher
-        .decrypt(key_and_nonce.1.as_slice().into(), file_data.as_ref())
+        .decrypt(m.nonce.as_slice().into(), file_data.as_ref())
         .map_err(|err| anyhow!("Decrypting small file: {}", err))?;
 
     fs::write(&dist, decrypted_file)?;

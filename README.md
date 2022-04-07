@@ -22,11 +22,11 @@ source ~/.bashrc
 
 + possibility to show certificates created by Mole, once the certificates are stored with chacha20-poly1305 encryption.
 
++ listing of identifiers.
+
 ### Future works
 
 + creation of certificates without the user having to insert an identifier, thus generating a random identifier that must be presented. 
-
-+ listing of identifiers.
 
 + Add a certificate to Mole.
 

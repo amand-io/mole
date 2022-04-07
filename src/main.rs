@@ -1,5 +1,7 @@
 #[macro_use]
-extern crate lazy_static;
+extern crate serde_derive;
+extern crate bincode;
+
 
 mod certificates;
 mod store;
@@ -9,6 +11,7 @@ mod encrypt;
 extern crate gflags;
 use sub::create as create;
 use sub::show as show;
+use sub::list as list;
 
 gflags::define! {
     -s, --self = false
@@ -32,6 +35,8 @@ fn main() {
     match args[0] {
         "create" => create::main(args[1].to_string()),
         "show" => show::main(args[1].to_string()),
+        "list" => list::main(),
+
         // Handle the rest of cases
         _ => println!("Don't have this options"),
     }

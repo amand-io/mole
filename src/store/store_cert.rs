@@ -55,7 +55,7 @@ pub fn save_cert(name: String, cert: rcgen::Certificate) -> std::io::Result<()> 
     println!("{}", key_arq);
 
     let _ = encrypt_file::encrypt_small_file(cert_path.clone(), cert_path.clone(), name.clone());
-    let _ = encrypt_file::encrypt_small_file(key_path.clone(), key_path.clone(), format!("{}_key", name));
+    let _ = encrypt_file::encrypt_small_file(key_path.clone(), key_path.clone(), format!("{}/config_key", name));
     Ok(())
 }
 
@@ -77,7 +77,7 @@ pub fn get_cert(name: String) -> std::io::Result<()> {
     println!("With cert:\n{}", contents_c);
 
     let key_path = format!("{}/src/store/data/{}/cert.key",path.display(), name.clone());
-    let _ = encrypt_file::decrypt_small_file(key_path.clone(), key_path.clone(), format!("{}_key", name));
+    let _ = encrypt_file::decrypt_small_file(key_path.clone(), key_path.clone(), format!("{}/config_key", name));
     let contents_k = fs::read_to_string(key_path.clone())
         .expect("Something went wrong reading the file");
 
@@ -85,6 +85,6 @@ pub fn get_cert(name: String) -> std::io::Result<()> {
 
     // Encrypt file again
     let _ = encrypt_file::encrypt_small_file(cert_path.clone(), cert_path.clone(), name.clone());
-    let _ = encrypt_file::encrypt_small_file(key_path.clone(), key_path.clone(), format!("{}_key", name));
+    let _ = encrypt_file::encrypt_small_file(key_path.clone(), key_path.clone(), format!("{}/config_key", name));
     Ok(())
 }
