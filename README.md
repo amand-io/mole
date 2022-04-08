@@ -24,6 +24,40 @@ source ~/.bashrc
 
 + listing of identifiers.
 
+### Running example
+
+Create self signed certificate:
+
+```bash
+mole create amandio -s
+```
+
+Show self signed certificate:
+
+```bash
+mole show amandio
+```
+
+Create signed certificate:
+
+```bash
+
+mole create amanfio -ca amandio
+```
+
+Show  signed certificate:
+
+```bash
+mole show amanfio
+```
+
+List all certificate identifiers:
+
+```bash
+
+mole list
+```
+
 ### Future works
 
 + creation of certificates without the user having to insert an identifier, thus generating a random identifier that must be presented. 
